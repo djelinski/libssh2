@@ -138,8 +138,9 @@ decrypt(LIBSSH2_SESSION * session, unsigned char *source,
        we risk losing those extra bytes */
     assert((len % blocksize) == 0);
 
-    while(len >= blocksize) {
-        if(session->remote.crypt->crypt(session, source, blocksize,
+    if(len > 0) {
+
+        if(session->remote.crypt->crypt(session, source, len,
                                          &session->remote.crypt_abstract)) {
             LIBSSH2_FREE(session, p->payload);
             return LIBSSH2_ERROR_DECRYPT;
@@ -148,11 +149,11 @@ decrypt(LIBSSH2_SESSION * session, unsigned char *source,
         /* if the crypt() function would write to a given address it
            wouldn't have to memcpy() and we could avoid this memcpy()
            too */
-        memcpy(dest, source, blocksize);
+        memcpy(dest, source, len);
 
-        len -= blocksize;       /* less bytes left */
-        dest += blocksize;      /* advance write pointer */
-        source += blocksize;    /* advance read pointer */
+        dest += len;      /* advance write pointer */
+        source += len;    /* advance read pointer */
+        len = 0;       /* less bytes left */
     }
     return LIBSSH2_ERROR_NONE;         /* all is fine */
 }
@@ -852,10 +853,11 @@ int _libssh2_transport_send(LIBSSH2_SESSION *session,
 
         /* Encrypt the whole packet data, one block size at a time.
            The MAC field is not encrypted. */
-        for(i = 0; i < packet_length; i += session->local.crypt->blocksize) {
-            unsigned char *ptr = &p->outbuf[i];
+/*        for(i = 0; i < packet_length; i += session->local.crypt->blocksize) {*/
+        if(packet_length > 0) {
+            unsigned char *ptr = &p->outbuf[0];
             if(session->local.crypt->crypt(session, ptr,
-                                            session->local.crypt->blocksize,
+                                            packet_length,/*session->local.crypt->blocksize,*/
                                             &session->local.crypt_abstract))
                 return LIBSSH2_ERROR_ENCRYPT;     /* encryption failure */
         }

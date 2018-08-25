@@ -252,6 +252,7 @@ crypt_init_arcfour128(LIBSSH2_SESSION * session,
 {
     int rc;
 
+printf("arc4\n");
     rc = crypt_init(session, method, iv, free_iv, secret, free_secret,
                     encrypt, abstract);
     if(rc == 0) {

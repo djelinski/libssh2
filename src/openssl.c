@@ -416,18 +416,18 @@ _libssh2_cipher_crypt(_libssh2_cipher_ctx * ctx,
                       _libssh2_cipher_type(algo),
                       int encrypt, unsigned char *block, size_t blocksize)
 {
-    unsigned char buf[EVP_MAX_BLOCK_LENGTH];
-    int ret;
+/*    unsigned char buf[EVP_MAX_BLOCK_LENGTH];*/
+    int ret, ret2;
     (void) algo;
     (void) encrypt;
 
 #ifdef HAVE_OPAQUE_STRUCTS
-    ret = EVP_Cipher(*ctx, buf, block, blocksize);
+    ret = EVP_CipherUpdate(*ctx, block, &ret2, block, blocksize);
 #else
-    ret = EVP_Cipher(ctx, buf, block, blocksize);
+    ret = EVP_CipherUpdate(ctx, block, &ret2, block, blocksize);
 #endif
     if(ret == 1) {
-        memcpy(block, buf, blocksize);
+/*        memcpy(block, buf, blocksize);*/
     }
     return ret == 1 ? 0 : 1;
 }
